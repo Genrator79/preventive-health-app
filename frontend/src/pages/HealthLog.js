@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { MoonIcon, SunIcon, BeakerIcon, HeartIcon, FaceSmileIcon } from '@heroicons/react/24/outline';
@@ -8,6 +8,7 @@ export default function HealthLog() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [completionPercentage, setCompletionPercentage] = useState(0);
   
   const [formData, setFormData] = useState({
     sleep: {
@@ -115,6 +116,42 @@ export default function HealthLog() {
     if (hours >= 7 && hours <= 9) return 'Great! You\'re in the optimal sleep range';
     return 'You might be oversleeping, which can affect your energy levels';
   };
+
+  // Calculate form completion percentage
+  useEffect(() => {
+    let fieldsCompleted = 0;
+    let totalFields = 8; // Total main sections to track
+  
+    // Sleep section (counts as 1 if either field is filled)
+    if (formData.sleep.hours || formData.sleep.quality) fieldsCompleted += 1;
+    
+    // Mood
+    if (formData.mood) fieldsCompleted += 1;
+    
+    // Energy
+    if (formData.energy) fieldsCompleted += 1;
+    
+    // Water
+    if (formData.water.glasses) fieldsCompleted += 1;
+    
+    // Exercise (counts if they marked whether they exercised)
+    fieldsCompleted += 1; // This is always completed since it's a yes/no toggle
+    
+    // Nutrition (counts as 1 if any nutrition field is filled)
+    if (formData.nutrition.meals || formData.nutrition.junkFood || 
+        formData.nutrition.fruits || formData.nutrition.vegetables) {
+      fieldsCompleted += 1;
+    }
+    
+    // Symptoms (counts as completed if they either added a symptom or implicitly indicated no symptoms)
+    fieldsCompleted += 1; // This is always completed as it's implicit
+    
+    // Notes (optional, doesn't count towards completion)
+    if (formData.notes) fieldsCompleted += 0.5; // Bonus for adding notes
+    
+    // Calculate percentage
+    setCompletionPercentage(Math.min(100, Math.round((fieldsCompleted / totalFields) * 100)));
+  }, [formData]);
 
   // Submit form
   const handleSubmit = async (e) => {
@@ -226,6 +263,26 @@ export default function HealthLog() {
             <p className="mt-1 text-sm text-gray-500">
               Track your daily health metrics to get personalized insights
             </p>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-sm font-medium text-gray-700">Form completion</span>
+            <span className="text-sm font-medium text-primary-600">{completionPercentage}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div 
+              className="bg-primary-600 h-2.5 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${completionPercentage}%` }}
+            ></div>
+          </div>
+          <div className="mt-1 text-xs text-gray-500 text-right">
+            {completionPercentage === 100 ? 
+              <span className="text-green-600 font-medium">All set! Ready to save your health log.</span> : 
+              <span>Fill in the form to track your health</span>
+            }
           </div>
         </div>
 
@@ -770,7 +827,7 @@ export default function HealthLog() {
           </div>
 
           {/* Symptoms Section */}
-          <div className="card p-6 transition-all duration-300 hover:shadow-md">
+          <div className="card p-6 transition-all duration-300 hover:shadow-md health-log-card">
             <div className="md:grid md:grid-cols-3 md:gap-6">
               <div className="md:col-span-1">
                 <div className="flex items-center">
@@ -785,86 +842,125 @@ export default function HealthLog() {
               </div>
               <div className="mt-5 md:mt-0 md:col-span-2">
                 {/* Existing symptoms */}
-                {formData.symptoms.length > 0 && (
-                  <div className="mb-6">
-                    <h4 className="text-sm font-medium text-gray-700 mb-3">Recorded Symptoms:</h4>
-                    <div className="space-y-2">
-                      {formData.symptoms.map((symptom, index) => (
-                        <div 
-                          key={index} 
-                          className="flex justify-between items-center p-3 rounded-lg bg-gray-50 border border-gray-200 animate-slide-up"
-                          style={{ animationDelay: `${index * 50}ms` }}
-                        >
-                          <div>
-                            <div className="flex items-center">
-                              <span className="font-medium text-gray-900">{symptom.name}</span>
-                              <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
-                                symptom.severity === 'mild' ? 'bg-yellow-100 text-yellow-800' :
-                                symptom.severity === 'moderate' ? 'bg-orange-100 text-orange-800' :
-                                'bg-red-100 text-red-800'
-                              }`}>
-                                {symptom.severity}
-                              </span>
-                            </div>
-                            {symptom.notes && (
-                              <p className="text-sm text-gray-500 mt-1">{symptom.notes}</p>
-                            )}
-                          </div>
-                          <button
-                            type="button"
-                            className="ml-2 p-1 rounded-full text-red-600 hover:bg-red-100 focus:outline-none"
-                            onClick={() => removeSymptom(index)}
-                            aria-label="Remove symptom"
+                <div className="relative">
+                  {formData.symptoms.length > 0 ? (
+                    <div className="mb-6">
+                      <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                        <span>Recorded Symptoms</span>
+                        <span className="ml-2 bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                          {formData.symptoms.length}
+                        </span>
+                      </h4>
+                      <div className="space-y-3">
+                        {formData.symptoms.map((symptom, index) => (
+                          <div 
+                            key={index} 
+                            className="flex justify-between items-center p-4 rounded-lg bg-white border border-gray-200 shadow-sm animate-slide-up hover:shadow-md transition-all duration-300"
+                            style={{ 
+                              animationDelay: `${index * 50}ms`,
+                              borderLeft: `4px solid ${
+                                symptom.severity === 'mild' ? '#EAB308' :
+                                symptom.severity === 'moderate' ? '#F97316' : '#EF4444'
+                              }`
+                            }}
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
+                            <div className="flex-1">
+                              <div className="flex items-center">
+                                <span className="font-medium text-gray-900">{symptom.name}</span>
+                                <span className={`ml-2 px-2.5 py-0.5 text-xs rounded-full ${
+                                  symptom.severity === 'mild' ? 'bg-yellow-100 text-yellow-800' :
+                                  symptom.severity === 'moderate' ? 'bg-orange-100 text-orange-800' :
+                                  'bg-red-100 text-red-800'
+                                }`}>
+                                  {symptom.severity}
+                                </span>
+                              </div>
+                              {symptom.notes && (
+                                <div className="mt-1.5 text-sm text-gray-500 flex items-start">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-gray-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                  <p>{symptom.notes}</p>
+                                </div>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              className="ml-4 p-1.5 rounded-full text-red-600 hover:bg-red-100 focus:outline-none transition-colors duration-200"
+                              onClick={() => removeSymptom(index)}
+                              aria-label="Remove symptom"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="flex items-center justify-center p-6 mb-6 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+                      <div className="text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        <h3 className="mt-2 text-sm font-medium text-gray-900">No symptoms recorded</h3>
+                        <p className="mt-1 text-sm text-gray-500 max-w-md">
+                          Add any symptoms you're experiencing below
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Add new symptom form */}
-                <div className="border-t border-gray-200 pt-5">
+                <div className={`border-t border-gray-200 pt-5 ${formData.symptoms.length > 0 ? 'animate-fade-in' : ''}`}>
                   <div className="grid grid-cols-6 gap-4">
                     <div className="col-span-6 sm:col-span-3">
                       <label htmlFor="symptom-name" className="block text-sm font-medium text-gray-700">
                         Symptom Name
                       </label>
-                      <input
-                        type="text"
-                        name="name"
-                        id="symptom-name"
-                        className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border border-gray-300 rounded-md"
-                        value={newSymptom.name}
-                        onChange={handleSymptomChange}
-                        placeholder="e.g., headache, fatigue, etc."
-                      />
+                      <div className="mt-1 relative rounded-md shadow-sm">
+                        <input
+                          type="text"
+                          name="name"
+                          id="symptom-name"
+                          className="focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border border-gray-300 rounded-md py-2 pl-10"
+                          value={newSymptom.name}
+                          onChange={handleSymptomChange}
+                          placeholder="e.g., headache, fatigue, etc."
+                        />
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                        </div>
+                      </div>
                     </div>
                     <div className="col-span-6 sm:col-span-3">
                       <label htmlFor="symptom-severity" className="block text-sm font-medium text-gray-700">
                         Severity
                       </label>
                       <div className="mt-1 flex space-x-2">
-                        {['mild', 'moderate', 'severe'].map((severity) => (
+                        {[
+                          { value: 'mild', label: 'Mild', color: 'bg-yellow-500' },
+                          { value: 'moderate', label: 'Moderate', color: 'bg-orange-500' },
+                          { value: 'severe', label: 'Severe', color: 'bg-red-500' }
+                        ].map((severity) => (
                           <button
-                            key={severity}
+                            key={severity.value}
                             type="button"
-                            className={`flex-1 py-2 px-3 rounded-md text-sm capitalize transition-colors duration-200 ${
-                              newSymptom.severity === severity
-                                ? severity === 'mild' ? 'bg-yellow-500 text-white' :
-                                  severity === 'moderate' ? 'bg-orange-500 text-white' :
-                                  'bg-red-500 text-white'
+                            className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all duration-200 ${
+                              newSymptom.severity === severity.value
+                                ? `${severity.color} text-white transform scale-105 shadow-md`
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                             onClick={() => setNewSymptom({
                               ...newSymptom,
-                              severity
+                              severity: severity.value
                             })}
                           >
-                            {severity}
+                            {severity.label}
                           </button>
                         ))}
                       </div>
@@ -873,24 +969,31 @@ export default function HealthLog() {
                       <label htmlFor="symptom-notes" className="block text-sm font-medium text-gray-700">
                         Notes (optional)
                       </label>
-                      <input
-                        type="text"
-                        name="notes"
-                        id="symptom-notes"
-                        className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border border-gray-300 rounded-md"
-                        value={newSymptom.notes}
-                        onChange={handleSymptomChange}
-                        placeholder="Any additional details about this symptom"
-                      />
+                      <div className="mt-1 relative rounded-md shadow-sm">
+                        <textarea
+                          name="notes"
+                          id="symptom-notes"
+                          rows={2}
+                          className="focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border border-gray-300 rounded-md py-2 pl-10"
+                          value={newSymptom.notes}
+                          onChange={handleSymptomChange}
+                          placeholder="Any additional details about this symptom"
+                        />
+                        <div className="absolute top-3 left-0 pl-3 flex items-center pointer-events-none">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </div>
+                      </div>
                     </div>
                     <div className="col-span-6">
                       <button
                         type="button"
                         onClick={addSymptom}
                         disabled={!newSymptom.name}
-                        className={`inline-flex items-center px-4 py-2 rounded-md shadow-sm text-sm font-medium ${
+                        className={`inline-flex items-center px-4 py-2.5 rounded-md shadow-sm text-sm font-medium transition-all duration-200 ${
                           newSymptom.name
-                            ? 'bg-primary-600 hover:bg-primary-700 text-white'
+                            ? 'bg-primary-600 hover:bg-primary-700 text-white transform hover:scale-105'
                             : 'bg-gray-300 cursor-not-allowed text-gray-500'
                         }`}
                       >
@@ -907,7 +1010,7 @@ export default function HealthLog() {
           </div>
 
           {/* Notes Section */}
-          <div className="card p-6 transition-all duration-300 hover:shadow-md">
+          <div className="card p-6 transition-all duration-300 hover:shadow-md health-log-card">
             <div className="md:grid md:grid-cols-3 md:gap-6">
               <div className="md:col-span-1">
                 <div className="flex items-center">
@@ -921,24 +1024,67 @@ export default function HealthLog() {
                 </p>
               </div>
               <div className="mt-5 md:mt-0 md:col-span-2">
-                <div className="grid grid-cols-6 gap-6">
-                  <div className="col-span-6">
-                    <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
-                      Notes
+                <div className="space-y-4">
+                  <div className="relative">
+                    <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+                      Journal Your Thoughts
                     </label>
-                    <textarea
-                      id="notes"
-                      name="notes"
-                      rows={3}
-                      className="mt-1 shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border border-gray-300 rounded-md"
-                      value={formData.notes}
-                      onChange={handleChange}
-                      placeholder="Any additional information about your health today"
-                    />
-                    <div className="mt-2 text-xs text-gray-500">
-                      Record any additional details or observations about your health today.
+                    <div className="relative rounded-md shadow-sm">
+                      <div className="absolute top-3 left-3 flex items-start pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </div>
+                      <textarea
+                        id="notes"
+                        name="notes"
+                        rows={4}
+                        className="focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border border-gray-300 rounded-md py-2 pl-10 transition-all duration-200"
+                        value={formData.notes}
+                        onChange={handleChange}
+                        placeholder="How are you feeling overall? Any additional information about your health today?"
+                      />
+                    </div>
+                    <div className="mt-2 flex justify-between items-center">
+                      <div className="text-xs text-gray-500">
+                        <span className="inline-flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          These notes are private and only visible to you
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {formData.notes ? `${formData.notes.length} characters` : 'No notes added'}
+                      </div>
                     </div>
                   </div>
+                  
+                  <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3 flex-1 md:flex md:justify-between">
+                        <p className="text-sm text-blue-700">
+                          Regular journaling about your health can help you identify patterns and triggers over time.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {formData.notes && formData.notes.length > 10 && (
+                    <div className="text-right">
+                      <span className="inline-flex items-center text-sm text-primary-600">
+                        <svg className="mr-1.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Notes saved
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
