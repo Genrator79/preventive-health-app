@@ -13,7 +13,7 @@ export default function HealthHistory() {
       try {
         setLoading(true);
         try {
-          const res = await axios.get('http://localhost:5001/api/health-logs');
+          const res = await axios.get('http://localhost:8080/api/health-logs');
           setLogs(res.data.data);
         } catch (err) {
           console.warn('Could not fetch health logs, using mock data:', err);

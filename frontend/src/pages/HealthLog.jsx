@@ -222,7 +222,7 @@ export default function HealthLog() {
       } catch (err) {
         // Fallback to direct API endpoint if the relative URL fails
         console.log('Retrying with absolute URL');
-        await axios.post('http://localhost:5001/api/health-logs', payload);
+        await axios.post('http://localhost:8080/api/health-logs', payload);
         setSuccess(true);
         
         // Redirect to dashboard after successful submission

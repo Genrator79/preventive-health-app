@@ -51,7 +51,7 @@ npm install
 Create a `.env` file in the server directory with the following content:
 ```
 NODE_ENV=development
-PORT=5000
+PORT=8080
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key
 JWT_EXPIRE=30d

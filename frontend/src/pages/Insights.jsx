@@ -12,7 +12,7 @@ export default function Insights() {
       try {
         setLoading(true);
         try {
-          const res = await axios.get('http://localhost:5001/api/insights');
+          const res = await axios.get('http://localhost:8080/api/insights');
           setInsights(res.data.data);
         } catch (err) {
           console.warn('Could not fetch insights, using mock data:', err);
@@ -106,7 +106,7 @@ export default function Insights() {
   const handleMarkAsRead = async (id) => {
     try {
       try {
-        await axios.put(`http://localhost:5001/api/insights/${id}/read`);
+        await axios.put(`http://localhost:8080/api/insights/${id}/read`);
       } catch (err) {
         console.warn('API call failed, updating state locally:', err);
       }
@@ -121,7 +121,7 @@ export default function Insights() {
   const handleActionTaken = async (id) => {
     try {
       try {
-        await axios.put(`http://localhost:5001/api/insights/${id}/action`);
+        await axios.put(`http://localhost:8080/api/insights/${id}/action`);
       } catch (err) {
         console.warn('API call failed, updating state locally:', err);
       }

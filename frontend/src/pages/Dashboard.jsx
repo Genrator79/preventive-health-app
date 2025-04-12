@@ -46,7 +46,7 @@ export default function Dashboard() {
         
         try {
           // Attempt to fetch summary data
-          const summaryRes = await axios.get('http://localhost:5001/api/health-logs/summary');
+          const summaryRes = await axios.get('http://localhost:8080/api/health-logs/summary');
           setSummary(summaryRes.data.data);
           setLatestLog(summaryRes.data.data.latestLog);
         } catch (err) {
@@ -59,7 +59,7 @@ export default function Dashboard() {
         
         try {
           // Attempt to fetch insights
-          const insightsRes = await axios.get('http://localhost:5001/api/insights/unread');
+          const insightsRes = await axios.get('http://localhost:8080/api/insights/unread');
           setInsights(insightsRes.data.data);
         } catch (err) {
           console.warn('Could not fetch insights, using fallback data:', err);
