@@ -15,9 +15,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Configure CORS with specific options
+// Configure CORS
 const corsOptions = {
-  origin: '*', // Allow all origins for demo
+  origin: ['http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
@@ -332,6 +332,15 @@ try {
     });
   });
 }
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {

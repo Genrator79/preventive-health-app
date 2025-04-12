@@ -5,24 +5,40 @@ const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
+// Development mode fallback
+const isDevelopment = process.env.NODE_ENV === 'development';
+const API_BASE_URL = isDevelopment ? 'http://localhost:8080' : '';
+
 export const AuthProvider = ({ children }) => {
-  // Set default user and authentication state for direct access
-  const [user, setUser] = useState({
-    _id: '1',
-    name: 'Demo User',
-    email: 'demo@example.com',
-    healthScore: 72,
-    createdAt: new Date()
-  });
-  const [token, setToken] = useState('mock-jwt-token');
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [serverAvailable, setServerAvailable] = useState(true);
 
   useEffect(() => {
-    // Skip loadUser effect since we're setting default user
-    setLoading(false);
+    const storedToken = localStorage.getItem('token');
+    if (storedToken) {
+      setAuthToken(storedToken);
+      loadUser();
+    } else {
+      setLoading(false);
+    }
+
+    // Check server availability
+    checkServerAvailability();
   }, []);
+
+  const checkServerAvailability = async () => {
+    try {
+      await axios.get(`${API_BASE_URL}/api/health`);
+      setServerAvailable(true);
+    } catch (err) {
+      console.warn('Server not available:', err.message);
+      setServerAvailable(false);
+    }
+  };
 
   // Set auth token for all requests
   const setAuthToken = (token) => {
@@ -35,55 +51,64 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Register user
-  const register = async (userData) => {
+  // Load user data
+  const loadUser = async () => {
     try {
       setLoading(true);
-      setError(null); // Clear any previous errors
+      const res = await axios.get(`${API_BASE_URL}/api/auth/me`);
+      setUser(res.data);
+      setIsAuthenticated(true);
+    } catch (err) {
+      console.error('Error loading user:', err);
+      if (err.code === 'ERR_NETWORK') {
+        setError('Server is not available. Please try again later.');
+        setServerAvailable(false);
+      } else {
+        logout();
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Register user
+  const register = async (userData) => {
+    if (!serverAvailable) {
+      setError('Server is not available. Please try again later.');
+      return false;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
       
-      console.log('Registering with data:', userData);
-      
-      // Add baseURL explicitly to make sure we're hitting the right endpoint
-      const apiUrl = 'http://localhost:5001/api/auth/register';
-      console.log('Making registration request to:', apiUrl);
-      
-      const res = await axios.post(apiUrl, userData, {
+      const res = await axios.post(`${API_BASE_URL}/api/auth/register`, userData, {
         headers: {
           'Content-Type': 'application/json'
         }
       });
       
-      console.log('Registration response:', res.data);
-      
       if (res.data && res.data.token) {
         setToken(res.data.token);
+        setAuthToken(res.data.token);
         
-        // Set user data if received from the server
         if (res.data.user) {
           setUser(res.data.user);
           setIsAuthenticated(true);
-          console.log('User authenticated:', res.data.user);
-        } else {
-          console.warn('No user data in registration response');
         }
         
         return true;
       } else {
-        console.error('No token in registration response');
         setError('Registration failed: Invalid server response');
         return false;
       }
     } catch (err) {
-      console.error('Registration error:', err);
-      if (err.response) {
-        console.error('Error status:', err.response.status);
-        console.error('Error data:', err.response.data);
-      } else if (err.request) {
-        console.error('No response received:', err.request);
+      if (err.code === 'ERR_NETWORK') {
+        setError('Server is not available. Please try again later.');
+        setServerAvailable(false);
       } else {
-        console.error('Error message:', err.message);
+        setError(err.response?.data?.message || 'Registration failed: ' + err.message);
       }
-      setError(err.response?.data?.message || 'Registration failed: ' + err.message);
       return false;
     } finally {
       setLoading(false);
@@ -92,51 +117,42 @@ export const AuthProvider = ({ children }) => {
 
   // Login user
   const login = async (userData) => {
+    if (!serverAvailable) {
+      setError('Server is not available. Please try again later.');
+      return false;
+    }
+
     try {
       setLoading(true);
-      setError(null); // Clear any previous errors
+      setError(null);
       
-      console.log('Logging in with data:', { ...userData, password: '****' });
-      
-      // Add baseURL explicitly to make sure we're hitting the right endpoint
-      const apiUrl = 'http://localhost:5001/api/auth/login';
-      console.log('Making login request to:', apiUrl);
-      
-      const res = await axios.post(apiUrl, userData, {
+      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, userData, {
         headers: {
           'Content-Type': 'application/json'
         }
       });
       
-      console.log('Login response:', res.data);
-      
       if (res.data && res.data.token) {
         setToken(res.data.token);
+        setAuthToken(res.data.token);
         
         if (res.data.user) {
           setUser(res.data.user);
           setIsAuthenticated(true);
-        } else {
-          console.warn('No user data in login response');
         }
         
         return true;
       } else {
-        console.error('No token in login response');
         setError('Login failed: Invalid server response');
         return false;
       }
     } catch (err) {
-      console.error('Login error:', err);
-      if (err.response) {
-        console.error('Error status:', err.response.status);
-        console.error('Error data:', err.response.data);
-      } else if (err.request) {
-        console.error('No response received:', err.request);
+      if (err.code === 'ERR_NETWORK') {
+        setError('Server is not available. Please try again later.');
+        setServerAvailable(false);
       } else {
-        console.error('Error message:', err.message);
+        setError(err.response?.data?.message || 'Login failed: ' + err.message);
       }
-      setError(err.response?.data?.message || 'Login failed: ' + err.message);
       return false;
     } finally {
       setLoading(false);
@@ -164,6 +180,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         loading,
         error,
+        serverAvailable,
         register,
         login,
         logout,

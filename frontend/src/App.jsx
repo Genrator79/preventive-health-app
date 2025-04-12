@@ -7,10 +7,13 @@ import HealthLog from './pages/HealthLog';
 import HealthHistory from './pages/HealthHistory';
 import Insights from './pages/Insights';
 import NotFound from './pages/NotFound';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 // Components
 import Layout from './components/Layout';
 import Db2 from './pages/Dashboard2';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Simple wrapper that just renders children
 const RouteWrapper = ({ children }) => {
@@ -18,19 +21,23 @@ const RouteWrapper = ({ children }) => {
 };
 
 function App() {
+  const { isAuthenticated } = useAuth();
+
   return (
     <Routes>
-      {/* Redirect all root paths to dashboard */}
-      <Route path="/login" element={<Navigate to="/" replace />} />
-      <Route path="/register" element={<Navigate to="/" replace />} />
+      {/* Public routes */}
+      <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
+      <Route path="/register" element={isAuthenticated ? <Navigate to="/" replace /> : <Register />} />
       
-      {/* Main application routes */}
+      {/* Protected routes */}
       <Route 
         path="/" 
         element={
-          <RouteWrapper>
-            <Layout />
-          </RouteWrapper>
+          <ProtectedRoute>
+            <RouteWrapper>
+              <Layout />
+            </RouteWrapper>
+          </ProtectedRoute>
         }
       >
         <Route index element={<Dashboard />} />
