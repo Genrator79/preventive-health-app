@@ -96,11 +96,11 @@ body {
   
   /* Animation utilities */
   .animate-fade-in {
-    animation: fadeIn 0.5s ease-in-out;
+    animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .animate-slide-up {
-    animation: slideUp 0.5s ease-out;
+    animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   
   .animate-pulse-slow {
@@ -113,6 +113,74 @@ body {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  /* Enhanced form elements for health logging */
+  .health-slider {
+    @apply w-full h-3 bg-gradient-to-r from-red-300 via-yellow-300 to-green-300 rounded-lg appearance-none cursor-pointer;
+  }
+  
+  .health-slider::-webkit-slider-thumb {
+    @apply appearance-none w-7 h-7 rounded-full bg-white border-4 border-primary-600 cursor-pointer shadow-lg transition-all duration-200;
+  }
+  
+  .health-slider::-webkit-slider-thumb:hover {
+    @apply transform scale-110;
+  }
+  
+  .health-slider::-moz-range-thumb {
+    @apply w-7 h-7 rounded-full bg-white border-4 border-primary-600 cursor-pointer shadow-lg transition-all duration-200;
+  }
+  
+  .health-slider::-moz-range-thumb:hover {
+    @apply transform scale-110;
+  }
+  
+  .health-slider:focus::-webkit-slider-thumb {
+    @apply ring-4 ring-primary-200;
+  }
+  
+  .mood-button {
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  .mood-button:hover {
+    @apply transform scale-110 shadow-md;
+  }
+  
+  .mood-button.active {
+    @apply transform scale-110 shadow-md;
+    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--primary-300);
+  }
+  
+  .water-counter button {
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  .water-counter button:hover {
+    @apply transform scale-110 shadow-md;
+  }
+  
+  .counter-button {
+    @apply transition-all duration-200 ease-out;
+  }
+  
+  .counter-button:hover {
+    @apply transform scale-110 shadow-sm;
+  }
+  
+  .counter-button:active {
+    @apply transform scale-95;
+  }
+  
+  /* Enhanced toggle switch */
+  .toggle-checkbox {
+    @apply transition-all duration-300 ease-out right-6;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+  }
+  
+  .toggle-label {
+    @apply transition-all duration-300 ease-out;
   }
 }
 
@@ -144,4 +212,72 @@ code {
 
 .bg-gradient-secondary {
   background: var(--gradient-secondary);
+}
+
+/* Hover effect for cards in health log */
+.health-log-card {
+  @apply transition-all duration-500 ease-out;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.health-log-card:hover {
+  @apply transform -translate-y-1 shadow-md;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Water count animation */
+@keyframes waterDrop {
+  0% { transform: translateY(-15px) scale(0.8); opacity: 0; }
+  50% { transform: translateY(-5px) scale(1.1); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.water-drop {
+  animation: waterDrop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Emphasize active controls */
+input:focus, select:focus, button:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.3);
+  transition: box-shadow 0.2s ease-out;
+}
+
+/* Styling for range inputs in Firefox */
+input[type=range]::-moz-range-track {
+  @apply h-3 bg-gradient-to-r from-red-300 via-yellow-300 to-green-300 rounded-lg;
+}
+
+/* Bounce animation for buttons */
+@keyframes buttonBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.btn-bounce:hover {
+  animation: buttonBounce 0.8s ease infinite;
+}
+
+/* Smooth transition for form sections */
+.form-section-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.form-section-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 400ms, transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.form-section-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.form-section-exit-active {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 300ms, transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
 } 
