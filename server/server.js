@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const apiRoutes = require('./routes/api');
 const path = require('path');
 
 // Load env variables
@@ -49,6 +50,8 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // Routes
 try {
+  app.use('/api', apiRoutes);
+
   app.use('/api/auth', require('./routes/auth'));
   app.use('/api/health-logs', require('./routes/healthLogs'));
   app.use('/api/insights', require('./routes/insights'));
@@ -351,7 +354,7 @@ app.use((err, req, res, next) => {
 });
 
 // Define PORT
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 
 // Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
