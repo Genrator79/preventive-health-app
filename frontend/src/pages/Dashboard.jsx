@@ -45,13 +45,70 @@ export default function Dashboard() {
         setLoading(true);
         
         try {
-          // Attempt to fetch summary data
-          const summaryRes = await axios.get('http://localhost:8080/api/health-logs/summary');
-          setSummary(summaryRes.data.data);
-          setLatestLog(summaryRes.data.data.latestLog);
+          // Fetch all health logs
+          const logsRes = await axios.get('http://localhost:8080/api/health-logs');
+          const logs = logsRes.data.data;
+          
+          if (logs && logs.length > 0) {
+            // Get the latest log
+            const latestLog = logs[0];
+            setLatestLog(latestLog);
+            
+            // Generate trends data from the last 7 days
+            const dates = Array.from({ length: 7 }, (_, i) => {
+              const date = new Date();
+              date.setDate(date.getDate() - i);
+              return date.toISOString().split('T')[0];
+            }).reverse();
+            
+            const trends = {
+              sleep: dates.map(date => {
+                const log = logs.find(l => new Date(l.date).toISOString().split('T')[0] === date);
+                return { 
+                  date, 
+                  value: log?.sleep?.hours || 0 
+                };
+              }),
+              mood: dates.map(date => {
+                const log = logs.find(l => new Date(l.date).toISOString().split('T')[0] === date);
+                const moodValues = { 'bad': 1, 'okay': 2, 'good': 3, 'great': 4 };
+                return { 
+                  date, 
+                  value: log?.mood ? moodValues[log.mood] || 0 : 0 
+                };
+              }),
+              water: dates.map(date => {
+                const log = logs.find(l => new Date(l.date).toISOString().split('T')[0] === date);
+                return { 
+                  date, 
+                  value: log?.water?.glasses || 0 
+                };
+              }),
+              exercise: dates.map(date => {
+                const log = logs.find(l => new Date(l.date).toISOString().split('T')[0] === date);
+                return { 
+                  date, 
+                  value: log?.exercise?.minutes || 0 
+                };
+              }),
+              scores: dates.map(date => {
+                const log = logs.find(l => new Date(l.date).toISOString().split('T')[0] === date);
+                return { 
+                  date, 
+                  value: log?.calculatedScore || 0 
+                };
+              })
+            };
+            
+            setSummary({ latestLog, trends });
+          } else {
+            // If no logs exist, use mock data
+            const mockSummary = getMockSummaryData();
+            setSummary(mockSummary);
+            setLatestLog(mockSummary.latestLog);
+          }
         } catch (err) {
-          console.warn('Could not fetch summary data, using fallback data:', err);
-          // Fallback data
+          console.warn('Could not fetch health logs, using fallback data:', err);
           const mockSummary = getMockSummaryData();
           setSummary(mockSummary);
           setLatestLog(mockSummary.latestLog);
@@ -79,31 +136,62 @@ export default function Dashboard() {
 
   // Mock data for fallback
   const getMockSummaryData = () => {
+    // Generate logs for the past 7 days
     const dates = Array.from({ length: 7 }, (_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - i);
       return date.toISOString().split('T')[0];
     }).reverse();
+
+    // Generate a latest log entry
+    const latestLog = {
+      _id: 'mock-log-0',
+      user: '1',
+      date: new Date(),
+      sleep: { 
+        hours: 7, 
+        quality: 'good'
+      },
+      mood: 'good',
+      energy: 'moderate',
+      water: { glasses: 6 },
+      exercise: { 
+        didExercise: true, 
+        minutes: 30,
+        type: 'walking'
+      },
+      nutrition: { 
+        meals: 3, 
+        junkFood: 1,
+        fruits: 2,
+        vegetables: 3
+      },
+      calculatedScore: 72
+    };
     
     return {
-      latestLog: {
-        _id: 'mock-log-id',
-        user: '1',
-        date: new Date(),
-        sleep: { hours: 7, quality: 'good' },
-        mood: 'good',
-        energy: 'moderate',
-        water: { glasses: 6 },
-        exercise: { didExercise: true, minutes: 30, type: 'walking' },
-        nutrition: { meals: 3, junkFood: 1, fruits: 2, vegetables: 3 },
-        calculatedScore: 72
-      },
+      latestLog,
       trends: {
-        sleep: dates.map((date, i) => ({ date, value: 6 + Math.floor(Math.random() * 3) })),
-        mood: dates.map((date, i) => ({ date, value: 3 + Math.floor(Math.random() * 3) })),
-        water: dates.map((date, i) => ({ date, value: 5 + Math.floor(Math.random() * 4) })),
-        exercise: dates.map((date, i) => ({ date, value: 15 + Math.floor(Math.random() * 30) })),
-        scores: dates.map((date, i) => ({ date, value: 65 + Math.floor(Math.random() * 20) }))
+        sleep: dates.map((date, i) => ({ 
+          date, 
+          value: 6 + Math.floor(Math.random() * 3) 
+        })),
+        mood: dates.map((date, i) => ({ 
+          date, 
+          value: 3 + Math.floor(Math.random() * 3) 
+        })),
+        water: dates.map((date, i) => ({ 
+          date, 
+          value: 5 + Math.floor(Math.random() * 4) 
+        })),
+        exercise: dates.map((date, i) => ({ 
+          date, 
+          value: 15 + Math.floor(Math.random() * 30) 
+        })),
+        scores: dates.map((date, i) => ({ 
+          date, 
+          value: 65 + Math.floor(Math.random() * 20) 
+        }))
       }
     };
   };
