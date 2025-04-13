@@ -115,12 +115,17 @@ export default function Dashboard() {
         }
         
         try {
-          // Attempt to fetch insights
-          const insightsRes = await axios.get('http://localhost:8080/api/insights/unread');
-          setInsights(insightsRes.data.data);
+          // Fetch insights from Ollama
+          const insightsRes = await axios.get('http://localhost:8080/api/insights');
+          if (insightsRes.data.data.message) {
+            // If no insights available yet
+            setInsights([]);
+          } else {
+            setInsights(insightsRes.data.data.insights || []);
+          }
         } catch (err) {
-          console.warn('Could not fetch insights, using fallback data:', err);
-          setInsights(getMockInsightsData());
+          console.warn('Could not fetch insights:', err);
+          setInsights([]);
         }
         
         setLoading(false);
@@ -296,30 +301,40 @@ export default function Dashboard() {
   const formatLatestLog = () => {
     if (!latestLog) return null;
     
+    // Calculate potential health issues based on data
+    const hasSleepDeprivation = latestLog.sleep?.hours < 6 || latestLog.sleep?.quality === 'poor';
+    const hasChronicStress = latestLog.mood === 'bad' && latestLog.energy === 'low';
+    const hasPoorNutrition = latestLog.nutrition?.junkFood > 2 && (latestLog.nutrition?.fruits + latestLog.nutrition?.vegetables) < 3;
+    const hasSedentaryLifestyle = !latestLog.exercise?.didExercise || latestLog.exercise?.minutes < 30;
+    
     const items = [
       {
         icon: ClockIcon,
-        title: 'Sleep',
-        value: latestLog.sleep?.hours ? `${latestLog.sleep.hours}h` : 'Not logged',
-        color: 'border-blue-500 bg-blue-50',
-      },
-      {
-        icon: BeakerIcon,
-        title: 'Water',
-        value: latestLog.water?.glasses ? `${latestLog.water.glasses} glasses` : 'Not logged',
-        color: 'border-cyan-500 bg-cyan-50',
-      },
-      {
-        icon: FaceSmileIcon,
-        title: 'Mood',
-        value: latestLog.mood || 'Not logged',
-        color: 'border-yellow-500 bg-yellow-50',
+        title: 'Sleep Deprivation',
+        value: hasSleepDeprivation ? 'At Risk' : 'Normal',
+        color: hasSleepDeprivation ? 'border-red-500 bg-red-50' : 'border-green-500 bg-green-50',
+        description: hasSleepDeprivation ? 'Insufficient sleep can lead to health problems' : 'Sleep patterns are healthy'
       },
       {
         icon: HeartIcon,
-        title: 'Exercise',
-        value: latestLog.exercise?.didExercise ? `${latestLog.exercise.minutes} min` : 'None',
-        color: 'border-red-500 bg-red-50',
+        title: 'Chronic Stress',
+        value: hasChronicStress ? 'At Risk' : 'Normal',
+        color: hasChronicStress ? 'border-red-500 bg-red-50' : 'border-green-500 bg-green-50',
+        description: hasChronicStress ? 'High stress levels detected' : 'Stress levels are manageable'
+      },
+      {
+        icon: BeakerIcon,
+        title: 'Poor Nutrition',
+        value: hasPoorNutrition ? 'At Risk' : 'Normal',
+        color: hasPoorNutrition ? 'border-red-500 bg-red-50' : 'border-green-500 bg-green-50',
+        description: hasPoorNutrition ? 'Diet needs improvement' : 'Nutrition is balanced'
+      },
+      {
+        icon: FaceSmileIcon,
+        title: 'Sedentary Lifestyle',
+        value: hasSedentaryLifestyle ? 'At Risk' : 'Normal',
+        color: hasSedentaryLifestyle ? 'border-red-500 bg-red-50' : 'border-green-500 bg-green-50',
+        description: hasSedentaryLifestyle ? 'Insufficient physical activity' : 'Active lifestyle maintained'
       },
     ];
     
@@ -413,7 +428,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {/* Today's Health */}
         <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
-          <h2 className="section-title">Today's Health</h2>
+          <h2 className="section-title">Health Risk Assessment</h2>
           {latestLog ? (
             <div>
               <div className="grid grid-cols-2 gap-4">
@@ -425,6 +440,7 @@ export default function Dashboard() {
                     <div>
                       <div className="text-sm text-gray-500">{item.title}</div>
                       <div className="text-lg font-semibold">{item.value}</div>
+                      <div className="text-xs text-gray-600 mt-1">{item.description}</div>
                     </div>
                   </div>
                 ))}
@@ -432,8 +448,8 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="card p-6 flex flex-col items-center justify-center text-center">
-              <p className="text-gray-500 mb-4">You haven't logged your health today</p>
-              <Link to="/log" className="btn-primary">Log Now</Link>
+              <p className="text-gray-500 mb-4">No health data available for assessment</p>
+              <Link to="/log" className="btn-primary">Log Health Data</Link>
             </div>
           )}
         </div>
@@ -547,7 +563,7 @@ export default function Dashboard() {
             ) : (
               <div className="flex flex-col items-center justify-center h-64 text-center">
                 <p className="text-gray-500 mb-2">No insights available yet</p>
-                <p className="text-sm text-gray-400">Continue logging your health to receive personalized insights</p>
+                <p className="text-sm text-gray-400">Keep logging your health data regularly. Our AI will analyze your patterns and provide personalized insights to help improve your health.</p>
               </div>
             )}
           </div>
