@@ -5,7 +5,6 @@ import { AuthProvider } from './context/AuthContext';
 import App from './App';
 import './index.css';
 
-// Enable React Router future flags
 const router = {
   future: {
     v7_startTransition: true,

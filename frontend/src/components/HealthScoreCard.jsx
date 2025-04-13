@@ -2,15 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { HeartIcon } from '@heroicons/react/24/solid';
 
-/**
- * HealthScoreCard component displays the user's overall health score with a visual gauge
- */
+
 export default function HealthScoreCard({ score, previousScore }) {
-  // Calculate the percentage for the visual gauge
+  
   const percentage = score || 0;
   const scoreChange = previousScore ? score - previousScore : 0;
-  
-  // Determine score color based on value
+ 
   const getScoreColorClass = () => {
     if (percentage >= 80) return 'text-green-600';
     if (percentage >= 65) return 'text-blue-600';
@@ -18,7 +15,6 @@ export default function HealthScoreCard({ score, previousScore }) {
     return 'text-red-600';
   };
   
-  // Determine score background color
   const getScoreBgClass = () => {
     if (percentage >= 80) return 'from-green-500 to-green-600';
     if (percentage >= 65) return 'from-blue-500 to-blue-600';
@@ -26,7 +22,6 @@ export default function HealthScoreCard({ score, previousScore }) {
     return 'from-red-500 to-red-600';
   };
   
-  // Get trend indicator
   const getTrendIndicator = () => {
     if (scoreChange > 0) {
       return (
@@ -50,7 +45,6 @@ export default function HealthScoreCard({ score, previousScore }) {
     return null;
   };
   
-  // Get score description based on value
   const getScoreDescription = () => {
     if (percentage >= 80) return 'Excellent';
     if (percentage >= 65) return 'Good';
@@ -77,8 +71,7 @@ export default function HealthScoreCard({ score, previousScore }) {
         </div>
         
         <p className="text-sm text-gray-600 mb-3">{getScoreDescription()}</p>
-        
-        {/* Visual gauge */}
+       
         <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2">
           <div 
             className={`h-2.5 rounded-full bg-gradient-to-r ${getScoreBgClass()}`} 

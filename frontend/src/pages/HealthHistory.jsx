@@ -30,15 +30,12 @@ export default function HealthHistory() {
     fetchLogs();
   }, []);
 
-  // Mock data for fallback
   const getMockHealthLogs = () => {
-    // Generate logs for the past 14 days
     const logs = [];
     for (let i = 0; i < 14; i++) {
       const date = new Date();
       date.setDate(date.getDate() - i);
       
-      // Skip some days randomly to simulate missing logs
       if (i > 0 && Math.random() > 0.8) continue;
       
       logs.push({
@@ -67,11 +64,9 @@ export default function HealthHistory() {
       });
     }
     
-    // Sort by date descending
     return logs.sort((a, b) => new Date(b.date) - new Date(a.date));
   };
 
-  // Format date to readable string
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', {
@@ -82,7 +77,6 @@ export default function HealthHistory() {
     });
   };
 
-  // Get score color class based on score value
   const getScoreColorClass = (score) => {
     if (score >= 80) return 'bg-green-50 text-green-700 border-l-green-500';
     if (score >= 60) return 'bg-blue-50 text-blue-700 border-l-blue-500';

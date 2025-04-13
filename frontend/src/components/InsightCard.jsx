@@ -7,9 +7,7 @@ import {
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
 
-/**
- * InsightCard component for displaying health insights with actions
- */
+
 export default function InsightCard({ 
   insight, 
   onMarkAsRead, 
@@ -27,7 +25,6 @@ export default function InsightCard({
     actionTaken 
   } = insight;
 
-  // Configure card appearance based on insight type
   const getCardConfig = () => {
     switch (insightType) {
       case 'alert':

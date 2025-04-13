@@ -6,14 +6,10 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-// @route   POST api/auth/register
-// @desc    Register a user
-// @access  Public
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
     
-    // Check if user already exists
     let user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({ 
@@ -22,17 +18,14 @@ router.post('/register', async (req, res) => {
       });
     }
     
-    // Create new user
     user = new User({
       name,
       email,
       password
     });
     
-    // Save user to database
     await user.save();
     
-    // Create token
     const token = user.getSignedJwtToken();
     
     res.status(201).json({
@@ -54,14 +47,10 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// @route   POST api/auth/login
-// @desc    Login user and get token
-// @access  Public
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     
-    // Validate email & password
     if (!email || !password) {
       return res.status(400).json({ 
         success: false,
@@ -69,7 +58,6 @@ router.post('/login', async (req, res) => {
       });
     }
     
-    // Check for user
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return res.status(401).json({ 
@@ -78,7 +66,6 @@ router.post('/login', async (req, res) => {
       });
     }
     
-    // Check if password matches
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
       return res.status(401).json({ 
@@ -87,7 +74,6 @@ router.post('/login', async (req, res) => {
       });
     }
     
-    // Create token
     const token = user.getSignedJwtToken();
     
     res.status(200).json({
@@ -109,9 +95,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// @route   GET api/auth/user
-// @desc    Get logged in user
-// @access  Private
 router.get('/user', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
@@ -122,9 +105,6 @@ router.get('/user', auth, async (req, res) => {
   }
 });
 
-// @route   GET api/auth/me
-// @desc    Get current user
-// @access  Private
 router.get('/me', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');

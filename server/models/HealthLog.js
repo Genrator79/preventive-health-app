@@ -94,11 +94,9 @@ const HealthLogSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// Method to calculate health score based on log data
 HealthLogSchema.methods.calculateHealthScore = function() {
-  let score = 50; // Base score
+  let score = 50;
   
-  // Sleep score (0-25 points)
   if (this.sleep.hours) {
     if (this.sleep.hours >= 7 && this.sleep.hours <= 9) {
       score += 25;
@@ -111,7 +109,6 @@ HealthLogSchema.methods.calculateHealthScore = function() {
     }
   }
   
-  // Water intake (0-15 points)
   if (this.water.glasses) {
     if (this.water.glasses >= 8) {
       score += 15;
@@ -122,7 +119,6 @@ HealthLogSchema.methods.calculateHealthScore = function() {
     }
   }
   
-  // Exercise (0-20 points)
   if (this.exercise.didExercise) {
     if (this.exercise.minutes >= 30) {
       score += 20;
@@ -133,7 +129,6 @@ HealthLogSchema.methods.calculateHealthScore = function() {
     }
   }
   
-  // Nutrition (0-20 points)
   let nutritionScore = 0;
   if (this.nutrition.fruits >= 2) nutritionScore += 5;
   if (this.nutrition.vegetables >= 3) nutritionScore += 5;
@@ -142,7 +137,6 @@ HealthLogSchema.methods.calculateHealthScore = function() {
   
   score += nutritionScore;
   
-  // Symptoms (0-20 points deduction)
   if (this.symptoms && this.symptoms.length > 0) {
     let severityDeduction = 0;
     this.symptoms.forEach(symptom => {
@@ -153,7 +147,6 @@ HealthLogSchema.methods.calculateHealthScore = function() {
     score = Math.max(0, score - Math.min(20, severityDeduction));
   }
   
-  // Cap the score between 0-100
   this.calculatedScore = Math.min(100, Math.max(0, score));
   return this.calculatedScore;
 };

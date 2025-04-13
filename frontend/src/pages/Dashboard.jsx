@@ -20,7 +20,6 @@ import {
   HeartIcon
 } from '@heroicons/react/24/outline';
 
-// Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -45,16 +44,14 @@ export default function Dashboard() {
         setLoading(true);
         
         try {
-          // Fetch all health logs
+    
           const logsRes = await axios.get('http://localhost:8080/api/health-logs');
           const logs = logsRes.data.data;
           
           if (logs && logs.length > 0) {
-            // Get the latest log
             const latestLog = logs[0];
             setLatestLog(latestLog);
             
-            // Generate trends data from the last 7 days
             const dates = Array.from({ length: 7 }, (_, i) => {
               const date = new Date();
               date.setDate(date.getDate() - i);
@@ -102,7 +99,6 @@ export default function Dashboard() {
             
             setSummary({ latestLog, trends });
           } else {
-            // If no logs exist, use mock data
             const mockSummary = getMockSummaryData();
             setSummary(mockSummary);
             setLatestLog(mockSummary.latestLog);
@@ -115,10 +111,8 @@ export default function Dashboard() {
         }
         
         try {
-          // Fetch insights from Ollama
           const insightsRes = await axios.get('http://localhost:8080/api/insights');
           if (insightsRes.data.data.message) {
-            // If no insights available yet
             setInsights([]);
           } else {
             setInsights(insightsRes.data.data.insights || []);
@@ -139,16 +133,14 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  // Mock data for fallback
   const getMockSummaryData = () => {
-    // Generate logs for the past 7 days
+
     const dates = Array.from({ length: 7 }, (_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - i);
       return date.toISOString().split('T')[0];
     }).reverse();
 
-    // Generate a latest log entry
     const latestLog = {
       _id: 'mock-log-0',
       user: '1',
@@ -256,7 +248,6 @@ export default function Dashboard() {
     ];
   };
 
-  // Chart data setup
   const getChartData = (metricData, label, borderColor) => {
     if (!metricData || metricData.length === 0) return null;
     
@@ -277,7 +268,6 @@ export default function Dashboard() {
     };
   };
 
-  // Chart options
   const chartOptions = {
     responsive: true,
     plugins: {
@@ -297,11 +287,9 @@ export default function Dashboard() {
     maintainAspectRatio: false,
   };
 
-  // Format the latest log for display
   const formatLatestLog = () => {
     if (!latestLog) return null;
     
-    // Calculate potential health issues based on data
     const hasSleepDeprivation = latestLog.sleep?.hours < 6 || latestLog.sleep?.quality === 'poor';
     const hasChronicStress = latestLog.mood === 'bad' && latestLog.energy === 'low';
     const hasPoorNutrition = latestLog.nutrition?.junkFood > 2 && (latestLog.nutrition?.fruits + latestLog.nutrition?.vegetables) < 3;
@@ -399,7 +387,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Health Score Card */}
       <div className="card mb-6 p-6 bg-gradient-primary text-white">
         <div className="flex flex-col md:flex-row md:items-center">
           <div className="flex-shrink-0 bg-white bg-opacity-20 rounded-md p-3 mb-4 md:mb-0 md:mr-5">
@@ -426,7 +413,6 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        {/* Today's Health */}
         <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
           <h2 className="section-title">Health Risk Assessment</h2>
           {latestLog ? (
@@ -454,7 +440,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Recent Trends */}
         <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
           <h2 className="section-title">Recent Trends</h2>
           <div className="card p-4">
@@ -475,7 +460,6 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* More Health Trends */}
         <div className="lg:col-span-2 animate-slide-up" style={{ animationDelay: '0.3s' }}>
           <h2 className="section-title">Health Metrics</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -520,7 +504,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* AI Insights */}
         <div className="animate-slide-up" style={{ animationDelay: '0.4s' }}>
           <h2 className="section-title">AI Insights</h2>
           <div className="card p-4 h-full overflow-y-auto custom-scrollbar" style={{ maxHeight: '350px' }}>
@@ -570,7 +553,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Tip of the day */}
       <div className="animate-slide-up" style={{ animationDelay: '0.5s' }}>
         <div className="card p-6 bg-gradient-secondary text-white">
           <div className="flex items-start">

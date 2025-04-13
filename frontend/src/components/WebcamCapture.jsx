@@ -25,7 +25,7 @@ const WebcamCapture = () => {
     setError(null);
     
     try {
-      // Convert base64 image to blob for upload
+    
       const base64Data = image.replace(/^data:image\/jpeg;base64,/, '');
       const blob = await (await fetch(`data:image/jpeg;base64,${base64Data}`)).blob();
       

@@ -3,9 +3,6 @@ const router = express.Router();
 const { generateInsights } = require('../controllers/insightController');
 const auth = require('../middleware/auth');
 
-// @route   GET api/insights
-// @desc    Get insights for current user
-// @access  Private
 router.get('/', auth, generateInsights);
 
 module.exports = router; 

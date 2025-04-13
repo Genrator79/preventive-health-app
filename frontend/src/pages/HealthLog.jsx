@@ -41,11 +41,9 @@ export default function HealthLog() {
     notes: ''
   });
 
-  // Handle general form change
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     
-    // Handle nested fields
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
       setFormData(prev => ({
@@ -63,7 +61,6 @@ export default function HealthLog() {
     }
   };
 
-  // Handle symptom form
   const handleSymptomChange = (e) => {
     const { name, value } = e.target;
     setNewSymptom(prev => ({
@@ -72,7 +69,6 @@ export default function HealthLog() {
     }));
   };
 
-  // Add symptom to list
   const addSymptom = (e) => {
     e.preventDefault();
     if (!newSymptom.name) return;
@@ -89,7 +85,6 @@ export default function HealthLog() {
     });
   };
 
-  // Remove symptom from list
   const removeSymptom = (index) => {
     setFormData(prev => ({
       ...prev,
@@ -97,7 +92,6 @@ export default function HealthLog() {
     }));
   };
 
-  // Helper function to get sleep quality color
   const getSleepQualityColor = (quality) => {
     switch (quality) {
       case 'poor': return 'bg-red-500';
@@ -108,7 +102,6 @@ export default function HealthLog() {
     }
   };
 
-  // Add this function at the beginning of the component
   const getSleepQualityMessage = (hours) => {
     if (hours === 0) return 'Enter your sleep duration';
     if (hours < 5) return 'You may not be getting enough sleep for optimal health';
@@ -117,56 +110,44 @@ export default function HealthLog() {
     return 'You might be oversleeping, which can affect your energy levels';
   };
 
-  // Calculate form completion percentage
   useEffect(() => {
     let fieldsCompleted = 0;
-    let totalFields = 8; // Total main sections to track
+    let totalFields = 8; 
   
-    // Sleep section (counts as 1 if either field is filled)
     if (formData.sleep.hours || formData.sleep.quality) fieldsCompleted += 1;
     
-    // Mood
     if (formData.mood) fieldsCompleted += 1;
     
-    // Energy
     if (formData.energy) fieldsCompleted += 1;
     
-    // Water
     if (formData.water.glasses) fieldsCompleted += 1;
     
-    // Exercise (counts if they marked whether they exercised)
-    fieldsCompleted += 1; // This is always completed since it's a yes/no toggle
-    
-    // Nutrition (counts as 1 if any nutrition field is filled)
+   
+    fieldsCompleted += 1; 
+
     if (formData.nutrition.meals || formData.nutrition.junkFood || 
         formData.nutrition.fruits || formData.nutrition.vegetables) {
       fieldsCompleted += 1;
     }
     
-    // Symptoms (counts as completed if they either added a symptom or implicitly indicated no symptoms)
-    fieldsCompleted += 1; // This is always completed as it's implicit
+    fieldsCompleted += 1; 
     
-    // Notes (optional, doesn't count towards completion)
-    if (formData.notes) fieldsCompleted += 0.5; // Bonus for adding notes
+    if (formData.notes) fieldsCompleted += 0.5;
     
-    // Calculate percentage
     setCompletionPercentage(Math.min(100, Math.round((fieldsCompleted / totalFields) * 100)));
   }, [formData]);
 
-  // Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     
     try {
-      // Handle the "other" exercise type if selected
       let exerciseType = formData.exercise.type;
       if (formData.exercise.type === 'other' && formData.exercise.typeOther) {
         exerciseType = formData.exercise.typeOther;
       }
       
-      // Convert string inputs to numbers where needed
       const payload = {
         ...formData,
         sleep: {
@@ -190,11 +171,9 @@ export default function HealthLog() {
           vegetables: formData.nutrition.vegetables ? Number(formData.nutrition.vegetables) : undefined
         }
       };
-      
-      // Clean up temporary fields that shouldn't be sent to the API
+
       if (payload.exercise.typeOther) delete payload.exercise.typeOther;
-      
-      // Remove empty fields to prevent validation errors
+
       if (!payload.sleep.hours) delete payload.sleep.hours;
       if (!payload.sleep.quality) delete payload.sleep.quality;
       if (!payload.mood) delete payload.mood;
@@ -207,25 +186,21 @@ export default function HealthLog() {
       if (!payload.nutrition.fruits) delete payload.nutrition.fruits;
       if (!payload.nutrition.vegetables) delete payload.nutrition.vegetables;
       if (!payload.notes) delete payload.notes;
-      
-      // Log the payload for debugging
+
       console.log('Submitting health log:', payload);
       
       try {
         await axios.post('/api/health-logs', payload);
         setSuccess(true);
         
-        // Redirect to dashboard after successful submission
         setTimeout(() => {
           navigate('/');
         }, 2000);
       } catch (err) {
-        // Fallback to direct API endpoint if the relative URL fails
         console.log('Retrying with absolute URL');
         await axios.post('http://localhost:8080/api/health-logs', payload);
         setSuccess(true);
         
-        // Redirect to dashboard after successful submission
         setTimeout(() => {
           navigate('/');
         }, 2000);
@@ -266,7 +241,6 @@ export default function HealthLog() {
           </div>
         </div>
 
-        {/* Progress bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-1">
             <span className="text-sm font-medium text-gray-700">Form completion</span>
@@ -294,7 +268,6 @@ export default function HealthLog() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Sleep Section */}
           <div className="card p-6 transition-all duration-300 hover:shadow-md health-log-card">
             <div className="md:grid md:grid-cols-3 md:gap-6">
               <div className="md:col-span-1">
@@ -385,7 +358,6 @@ export default function HealthLog() {
             </div>
           </div>
 
-          {/* Mood & Energy Section */}
           <div className="card p-6 transition-all duration-300 hover:shadow-md">
             <div className="md:grid md:grid-cols-3 md:gap-6">
               <div className="md:col-span-1">
@@ -420,11 +392,9 @@ export default function HealthLog() {
                               : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
                           }`}
                           onClick={() => {
-                            // Add a slight delay to make the animation more noticeable
                             const btn = document.activeElement;
                             if (btn) btn.blur();
-                            
-                            // Update the form data
+
                             setFormData({ ...formData, mood: option.value });
                           }}
                         >
@@ -499,7 +469,6 @@ export default function HealthLog() {
             </div>
           </div>
 
-          {/* Water & Exercise Section */}
           <div className="card p-6 transition-all duration-300 hover:shadow-md">
             <div className="md:grid md:grid-cols-3 md:gap-6">
               <div className="md:col-span-1">
@@ -535,15 +504,14 @@ export default function HealthLog() {
                               boxShadow: isActive ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
                             }}
                             onClick={() => {
-                              // Set with animation if increasing
                               if (i + 1 > formData.water.glasses) {
-                                // Add animation class temporarily
+
                                 const btn = document.activeElement;
                                 if (btn) {
                                   btn.classList.add('water-drop');
                                   setTimeout(() => {
                                     btn.classList.remove('water-drop');
-                                  }, 600); // Animation duration
+                                  }, 600); 
                                 }
                               }
                               
@@ -674,7 +642,6 @@ export default function HealthLog() {
             </div>
           </div>
 
-          {/* Nutrition Section */}
           <div className="card p-6 transition-all duration-300 hover:shadow-md">
             <div className="md:grid md:grid-cols-3 md:gap-6">
               <div className="md:col-span-1">
@@ -826,7 +793,6 @@ export default function HealthLog() {
             </div>
           </div>
 
-          {/* Symptoms Section */}
           <div className="card p-6 transition-all duration-300 hover:shadow-md health-log-card">
             <div className="md:grid md:grid-cols-3 md:gap-6">
               <div className="md:col-span-1">
@@ -841,7 +807,6 @@ export default function HealthLog() {
                 </p>
               </div>
               <div className="mt-5 md:mt-0 md:col-span-2">
-                {/* Existing symptoms */}
                 <div className="relative">
                   {formData.symptoms.length > 0 ? (
                     <div className="mb-6">
@@ -913,7 +878,6 @@ export default function HealthLog() {
                   )}
                 </div>
 
-                {/* Add new symptom form */}
                 <div className={`border-t border-gray-200 pt-5 ${formData.symptoms.length > 0 ? 'animate-fade-in' : ''}`}>
                   <div className="grid grid-cols-6 gap-4">
                     <div className="col-span-6 sm:col-span-3">

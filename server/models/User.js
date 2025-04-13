@@ -25,7 +25,7 @@ const UserSchema = new mongoose.Schema({
   },
   healthScore: {
     type: Number,
-    default: 50 // Out of 100
+    default: 50 
   },
   createdAt: {
     type: Date,
@@ -33,7 +33,7 @@ const UserSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-// Hash password before saving
+
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
@@ -44,14 +44,13 @@ UserSchema.pre('save', async function (next) {
   next();
 });
 
-// Sign JWT token
 UserSchema.methods.getSignedJwtToken = function () {
   return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE,
   });
 };
 
-// Match user password
+
 UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };

@@ -1,29 +1,27 @@
 const mongoose = require('mongoose');
 
-// Define the Health Data Schema
 const HealthDataSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Reference to the User model
+    ref: 'User', 
     required: true
   },
   timestamp: {
     type: Date,
-    default: Date.now // Automatically set the timestamp to the current date and time
+    default: Date.now 
   },
   
-  // Stress Level and Status (Simulated from logic)
   stressLevel: {
     type: Number,
     min: 1,
     max: 10,
-    required: true, // Stress level on a scale of 1-10
+    required: true, 
     default: Math.floor(Math.random() * 10) + 1
   },
   stressLevelStatus: {
     type: String,
     enum: ['Low', 'Moderate', 'High'],
-    required: true, // Status based on the stress level
+    required: true, 
     default: function() {
       const stress = this.stressLevel;
       if (stress <= 3) return 'Low';
@@ -31,12 +29,11 @@ const HealthDataSchema = new mongoose.Schema({
       return 'High';
     }
   },
-  
-  // Mood (Derived from stress level)
+
   mood: {
     type: String,
     enum: ['Happy', 'Neutral', 'Sad'],
-    required: true, // Mood derived from stress levels
+    required: true, 
     default: function() {
       const stress = this.stressLevel;
       if (stress <= 3) return 'Happy';
@@ -44,12 +41,11 @@ const HealthDataSchema = new mongoose.Schema({
       return 'Sad';
     }
   },
-  
-  // Relaxation Level (Derived from stress level)
+
   relaxationLevel: {
     type: String,
     enum: ['High', 'Moderate', 'Low'],
-    required: true, // Relaxation level based on stress and posture
+    required: true, 
     default: function() {
       const stress = this.stressLevel;
       if (stress <= 3) return 'High';
@@ -58,25 +54,23 @@ const HealthDataSchema = new mongoose.Schema({
     }
   },
   
-  // Fatigue Level (Simulated on a scale of 1-10)
   fatigueLevel: {
     type: Number,
     min: 1,
     max: 10,
-    required: true, // Fatigue level on a scale of 1-10
+    required: true, 
     default: Math.floor(Math.random() * 10) + 1
   },
   
-  // Respiratory Metrics (Simulated data for now)
   respiratoryRate: {
     type: Number,
-    required: true, // Breaths per minute based on visual cues from chest movement or posture
-    default: Math.floor(Math.random() * (20 - 12) + 12) // 12-20 bpm
+    required: true, 
+    default: Math.floor(Math.random() * (20 - 12) + 12) 
   },
   respiratoryRateStatus: {
     type: String,
     enum: ['Normal', 'High', 'Low'],
-    required: true, // Status based on respiratory rate
+    required: true, 
     default: function() {
       const rate = this.respiratoryRate;
       if (rate < 12) return 'Low';
@@ -85,16 +79,15 @@ const HealthDataSchema = new mongoose.Schema({
     }
   },
   
-  // Heart Rate (Simulated from body language or inferred from visuals)
   heartRate: {
     type: Number,
-    required: true, // Heart rate in bpm
-    default: Math.floor(Math.random() * (100 - 60) + 60) // 60-100 bpm
+    required: true,
+    default: Math.floor(Math.random() * (100 - 60) + 60) 
   },
   heartRateStatus: {
     type: String,
     enum: ['Normal', 'High', 'Low'],
-    required: true, // Status based on heart rate
+    required: true, 
     default: function() {
       const rate = this.heartRate;
       if (rate < 60) return 'Low';
@@ -103,16 +96,15 @@ const HealthDataSchema = new mongoose.Schema({
     }
   },
   
-  // Oxygen Saturation (Simulated data for now)
   oxygenSaturation: {
     type: Number,
-    required: true, // Oxygen saturation in %
-    default: Math.floor(Math.random() * (100 - 94) + 94) // 94-100%
+    required: true, 
+    default: Math.floor(Math.random() * (100 - 94) + 94) 
   },
   oxygenSaturationStatus: {
     type: String,
     enum: ['Normal', 'Low', 'Critical'],
-    required: true, // Oxygen saturation status
+    required: true, 
     default: function() {
       const saturation = this.oxygenSaturation;
       if (saturation < 95) return 'Low';
@@ -120,17 +112,14 @@ const HealthDataSchema = new mongoose.Schema({
     }
   },
   
-  // General Recommendations (Customized based on health data)
   recommendations: [{
-    type: String // Array of health recommendations based on analyzed data
+    type: String 
   }],
   
-  // Raw Image Data (Base64 encoded)
   rawImageData: {
-    type: String, // Store the raw image data as a base64 string
-    select: false // Don't include in regular queries to avoid exposing large image data
+    type: String, 
+    select: false 
   }
 });
 
-// Export the model based on the schema
 module.exports = mongoose.model('HealthData', HealthDataSchema);

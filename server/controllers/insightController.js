@@ -9,10 +9,9 @@ const generateInsights = async (req, res) => {
     const userId = req.user._id;
     console.log('Generating insights for user:', userId);
     
-    // Fetch user's health logs
     const logs = await HealthLog.find({ user: userId })
       .sort({ date: -1 })
-      .limit(30); // Get last 30 days of logs
+      .limit(30); 
     
     console.log('Found logs:', logs.length);
     
@@ -26,7 +25,6 @@ const generateInsights = async (req, res) => {
       });
     }
 
-    // Prepare data for Gemini AI
     const healthData = logs.map(log => ({
       date: new Date(log.date).toLocaleDateString(),
       sleep: {
@@ -53,7 +51,6 @@ const generateInsights = async (req, res) => {
 
     console.log('Prepared health data for analysis');
 
-    // Create the prompt
     const prompt = `You are a health analysis AI. Analyze this health data and provide 3-5 key insights. 
     Data: ${JSON.stringify(healthData, null, 2)}
     
@@ -89,7 +86,6 @@ const generateInsights = async (req, res) => {
 
     console.log('Sending request to Gemini AI');
     
-    // Make API call to Gemini
     const response = await axios.post(
       `${GEMINI_API_URL}?key=${GEMINI_API_KEY}`,
       {
@@ -107,14 +103,11 @@ const generateInsights = async (req, res) => {
     const text = response.data.candidates[0].content.parts[0].text;
     console.log('Received response from Gemini AI:', text);
 
-    // Parse the response
     let insights;
     try {
-      // Extract JSON from the response text
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
-        // Ensure the response has the correct structure
         insights = {
           insights: Array.isArray(parsed.insights) ? parsed.insights : []
         };
@@ -124,7 +117,6 @@ const generateInsights = async (req, res) => {
       }
     } catch (parseError) {
       console.error('Error parsing Gemini response:', parseError);
-      // If parsing fails, create a default insight
       insights = {
         insights: [{
           title: "Health Analysis",

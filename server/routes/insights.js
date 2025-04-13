@@ -4,9 +4,6 @@ const HealthInsight = require('../models/HealthInsight');
 
 const router = express.Router();
 
-// @route   GET api/insights
-// @desc    Get all insights for current user
-// @access  Private
 router.get('/', auth, async (req, res) => {
   try {
     const insights = await HealthInsight.find({ user: req.user.id })
@@ -23,9 +20,6 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// @route   GET api/insights/unread
-// @desc    Get unread insights for current user
-// @access  Private
 router.get('/unread', auth, async (req, res) => {
   try {
     const insights = await HealthInsight.find({ 
@@ -44,19 +38,14 @@ router.get('/unread', auth, async (req, res) => {
   }
 });
 
-// @route   PUT api/insights/:id/read
-// @desc    Mark an insight as read
-// @access  Private
 router.put('/:id/read', auth, async (req, res) => {
   try {
     let insight = await HealthInsight.findById(req.params.id);
-    
-    // Check if insight exists
+   
     if (!insight) {
       return res.status(404).json({ message: 'Insight not found' });
     }
     
-    // Check insight belongs to user
     if (insight.user.toString() !== req.user.id) {
       return res.status(401).json({ message: 'Not authorized' });
     }
@@ -77,19 +66,14 @@ router.put('/:id/read', auth, async (req, res) => {
   }
 });
 
-// @route   PUT api/insights/:id/action
-// @desc    Mark an insight as actioned
-// @access  Private
 router.put('/:id/action', auth, async (req, res) => {
   try {
     let insight = await HealthInsight.findById(req.params.id);
     
-    // Check if insight exists
     if (!insight) {
       return res.status(404).json({ message: 'Insight not found' });
     }
     
-    // Check insight belongs to user
     if (insight.user.toString() !== req.user.id) {
       return res.status(401).json({ message: 'Not authorized' });
     }

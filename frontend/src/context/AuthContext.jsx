@@ -5,7 +5,6 @@ const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
-// Development mode fallback
 const isDevelopment = process.env.NODE_ENV === 'development';
 const API_BASE_URL = isDevelopment ? 'http://localhost:8080' : '';
 
@@ -26,7 +25,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
 
-    // Check server availability
     checkServerAvailability();
   }, []);
 
@@ -40,7 +38,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Set auth token for all requests
+
   const setAuthToken = (token) => {
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -51,7 +49,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Load user data
   const loadUser = async () => {
     try {
       setLoading(true);
@@ -71,7 +68,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Register user
   const register = async (userData) => {
     if (!serverAvailable) {
       setError('Server is not available. Please try again later.');
@@ -115,7 +111,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Login user
   const login = async (userData) => {
     if (!serverAvailable) {
       setError('Server is not available. Please try again later.');
@@ -159,7 +154,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout user
   const logout = () => {
     setToken(null);
     setUser(null);
@@ -167,7 +161,6 @@ export const AuthProvider = ({ children }) => {
     setAuthToken(null);
   };
 
-  // Clear error
   const clearError = () => {
     setError(null);
   };

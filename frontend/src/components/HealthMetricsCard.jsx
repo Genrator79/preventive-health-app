@@ -9,9 +9,6 @@ import {
   FireIcon,
 } from '@heroicons/react/24/outline';
 
-/**
- * HealthMetricsCard component for displaying a single health metric with icon
- */
 export default function HealthMetricsCard({ 
   title, 
   value, 
@@ -22,7 +19,7 @@ export default function HealthMetricsCard({
   description,
   onClick 
 }) {
-  // Determine which icon to display
+ 
   const IconComponent = () => {
     switch (icon) {
       case 'sleep':
@@ -42,10 +39,9 @@ export default function HealthMetricsCard({
     }
   };
   
-  // Determine border color based on props
   const borderColorClass = `border-${color || 'primary'}-500`;
   
-  // Determine trend indicator
+
   const renderTrend = () => {
     if (!trend) return null;
     

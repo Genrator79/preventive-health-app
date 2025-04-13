@@ -6,9 +6,6 @@ const HealthInsight = require('../models/HealthInsight');
 
 const router = express.Router();
 
-// @route   POST api/health-logs
-// @desc    Create a new health log
-// @access  Private
 router.post('/', auth, async (req, res) => {
   try {
     const {
@@ -22,7 +19,6 @@ router.post('/', auth, async (req, res) => {
       notes
     } = req.body;
     
-    // Create new health log
     const healthLog = new HealthLog({
       user: req.user.id,
       sleep,
@@ -34,14 +30,11 @@ router.post('/', auth, async (req, res) => {
       symptoms,
       notes
     });
-    
-    // Calculate health score
+
     healthLog.calculateHealthScore();
     
-    // Save health log
     await healthLog.save();
     
-    // Update user's health score (average of last 7 logs)
     const recentLogs = await HealthLog.find({ user: req.user.id })
       .sort({ date: -1 })
       .limit(7);
@@ -53,7 +46,6 @@ router.post('/', auth, async (req, res) => {
       await User.findByIdAndUpdate(req.user.id, { healthScore: avgScore });
     }
     
-    // Generate insights based on the new health log
     await generateInsights(req.user.id);
     
     res.status(201).json({
@@ -66,9 +58,6 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// @route   GET api/health-logs
-// @desc    Get all health logs for current user
-// @access  Private
 router.get('/', auth, async (req, res) => {
   try {
     const logs = await HealthLog.find({ user: req.user.id }).sort({ date: -1 });
@@ -84,19 +73,14 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// @route   GET api/health-logs/:id
-// @desc    Get health log by ID
-// @access  Private
 router.get('/:id', auth, async (req, res) => {
   try {
     const log = await HealthLog.findById(req.params.id);
     
-    // Check if log exists
     if (!log) {
       return res.status(404).json({ message: 'Health log not found' });
     }
     
-    // Check log belongs to user
     if (log.user.toString() !== req.user.id) {
       return res.status(401).json({ message: 'Not authorized' });
     }
@@ -111,15 +95,12 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-// @route   GET api/health-logs/summary
-// @desc    Get health summary for current user
-// @access  Private
+
 router.get('/summary', auth, async (req, res) => {
   try {
-    // Get latest log
+
     const latestLog = await HealthLog.findOne({ user: req.user.id }).sort({ date: -1 });
     
-    // Get average scores for last 7 days
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     
@@ -128,7 +109,6 @@ router.get('/summary', auth, async (req, res) => {
       date: { $gte: sevenDaysAgo }
     }).sort({ date: 1 });
     
-    // Process data for trends
     const trends = {
       sleep: [],
       mood: [],
@@ -182,10 +162,8 @@ router.get('/summary', auth, async (req, res) => {
   }
 });
 
-// Helper function to generate insights
 async function generateInsights(userId) {
   try {
-    // Get the last 7 days of health logs
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     
@@ -195,18 +173,16 @@ async function generateInsights(userId) {
     }).sort({ date: 1 });
     
     if (logs.length < 3) {
-      // Not enough data for meaningful insights
+
       return;
     }
     
     const insights = [];
     
-    // Check for sleep patterns
     const sleepHours = logs.map(log => log.sleep?.hours).filter(hours => hours);
     if (sleepHours.length >= 3) {
       const avgSleep = sleepHours.reduce((sum, hours) => sum + hours, 0) / sleepHours.length;
       
-      // Low sleep pattern
       if (avgSleep < 6) {
         insights.push({
           user: userId,
@@ -224,12 +200,11 @@ async function generateInsights(userId) {
       }
     }
     
-    // Check for water intake patterns
     const waterIntake = logs.map(log => log.water?.glasses).filter(glasses => glasses !== undefined);
     if (waterIntake.length >= 3) {
       const avgWater = waterIntake.reduce((sum, glasses) => sum + glasses, 0) / waterIntake.length;
       
-      // Low water intake
+
       if (avgWater < 5) {
         insights.push({
           user: userId,
@@ -247,7 +222,6 @@ async function generateInsights(userId) {
       }
     }
     
-    // Check for mood patterns
     const moodValues = {
       'terrible': 1,
       'bad': 2,
@@ -260,7 +234,6 @@ async function generateInsights(userId) {
     if (moods.length >= 3) {
       const avgMood = moods.reduce((sum, m) => sum + m, 0) / moods.length;
       
-      // Low mood pattern
       if (avgMood < 2.5) {
         insights.push({
           user: userId,
@@ -279,7 +252,6 @@ async function generateInsights(userId) {
       }
     }
     
-    // Check for exercise patterns
     const exerciseDays = logs.filter(log => log.exercise && log.exercise.didExercise).length;
     const exerciseRate = exerciseDays / logs.length;
     
@@ -300,7 +272,6 @@ async function generateInsights(userId) {
       });
     }
     
-    // Save insights to database
     if (insights.length > 0) {
       await HealthInsight.insertMany(insights);
     }

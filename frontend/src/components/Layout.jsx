@@ -33,7 +33,7 @@ export default function Layout() {
 
   return (
     <div className="h-screen flex overflow-hidden bg-gray-50">
-      {/* Mobile sidebar */}
+  
       <Transition.Root show={sidebarOpen} as={Fragment}>
         <Dialog
           as="div"
@@ -127,12 +127,11 @@ export default function Layout() {
             </div>
           </Transition.Child>
           <div className="flex-shrink-0 w-14">
-            {/* Force sidebar to shrink to fit close icon */}
+           
           </div>
         </Dialog>
       </Transition.Root>
 
-      {/* Desktop sidebar */}
       <div className="hidden md:flex md:flex-shrink-0">
         <div className="flex flex-col w-72">
           <div className="flex flex-col h-0 flex-1 glass-effect border-r border-gray-100">
@@ -188,7 +187,6 @@ export default function Layout() {
         </div>
       </div>
 
-      {/* Main content */}
       <div className="flex flex-col w-0 flex-1 overflow-hidden">
         <div className="md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3">
           <button

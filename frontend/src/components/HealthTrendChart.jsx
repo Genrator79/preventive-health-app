@@ -12,7 +12,6 @@ import {
   Legend,
 } from 'chart.js';
 
-// Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -23,9 +22,6 @@ ChartJS.register(
   Legend
 );
 
-/**
- * HealthTrendChart component displays a line chart for a health metric over time
- */
 export default function HealthTrendChart({ 
   title, 
   data, 
@@ -34,7 +30,7 @@ export default function HealthTrendChart({
   unit = '',
   height = 200
 }) {
-  // Format dates for x-axis
+
   const formatDateLabels = (rawData) => {
     if (!rawData || !rawData.length) return [];
     return rawData.map(item => {
@@ -43,13 +39,11 @@ export default function HealthTrendChart({
     });
   };
   
-  // Format values for y-axis
   const formatValues = (rawData) => {
     if (!rawData || !rawData.length) return [];
     return rawData.map(item => item.value);
   };
   
-  // Prepare chart data
   const chartData = {
     labels: formatDateLabels(data),
     datasets: [
@@ -65,7 +59,6 @@ export default function HealthTrendChart({
     ],
   };
   
-  // Chart options
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,

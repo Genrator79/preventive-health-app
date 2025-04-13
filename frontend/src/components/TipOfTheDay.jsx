@@ -2,11 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { SparklesIcon } from '@heroicons/react/24/outline';
 
-/**
- * TipOfTheDay component displays a daily health tip to the user
- */
 export default function TipOfTheDay({ tip, category }) {
-  // List of possible categories and their colors
+ 
   const categories = {
     nutrition: {
       title: 'Nutrition',
@@ -30,7 +27,7 @@ export default function TipOfTheDay({ tip, category }) {
     }
   };
   
-  // Get category details, default to general if not found
+ 
   const tipCategory = categories[category] || categories.general;
   
   return (
@@ -65,7 +62,6 @@ export default function TipOfTheDay({ tip, category }) {
   );
 }
 
-// Define default tip in case none is provided
 const DEFAULT_TIP = "Stay hydrated! Aim to drink at least 8 glasses of water daily to maintain proper hydration, which is essential for overall health.";
 
 TipOfTheDay.propTypes = {
